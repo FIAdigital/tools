@@ -178,7 +178,7 @@ menu() {
     #echo " -------------"
     echo -e " ${GREEN}0.${PLAIN} 退出脚本"
     echo ""
-    read -rp "請輸入選項项 [0-9]:" NumberInput
+    read -rp "請輸入選項 [0-9]:" NumberInput
     case "$NumberInput" in
         1) install_docker_compose ;;
         2) install_compose ;;
