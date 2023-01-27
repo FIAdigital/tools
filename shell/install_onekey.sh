@@ -152,7 +152,9 @@ k8s_install_helm(){
 install_autojump(){
     sudo apt-get update
     sudo apt-get install autojump -y
-    echo '. /usr/share/autojump/autojump.sh' >> ~/.bashrc && source ~/.bashrc
+    echo ". /usr/share/autojump/autojump.sh" >> ~/.bashrc
+    sleep 2
+    source ~/.bashrc
     back2menu
 }
 
