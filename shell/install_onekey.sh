@@ -79,6 +79,16 @@ install_compose(){
     sudo chmod 755 $DESTINATION
     back2menu
 }
+uninstall_docker(){
+    sudo apt-get purge -y docker-engine docker docker.io docker-ce docker-ce-cli docker-compose-plugin
+    sudo apt-get autoremove -y --purge docker-engine docker docker.io docker-ce docker-compose-plugin
+    sudo rm -rf /var/lib/docker /etc/docker
+    sudo rm /etc/apparmor.d/docker
+    sudo groupdel docker
+    sudo rm -rf /var/run/docker.sock
+    sleep 1
+    back2menu
+}
 
 k8s_ipv4_setup(){
     cat <<EOF | sudo tee /etc/modules-load.d/k8s.conf
@@ -149,9 +159,30 @@ k8s_install_helm(){
     back2menu
 }
 
+install_kubecli(){
+    cat <<EOF | sudo tee -a ~/.bashrc
+    if [ -f ~/.bash_aliases ]; then
+        . ~/.bash_aliases
+    fi
+EOF
+    cat <<EOF touch ~/.bash_aliases | sudo tee ~/.bash_aliases
+    alias k='kubectl'
+    alias kg='kubectl get'
+    alias kgp='kubectl get po'
+    alias kgpa='kubectl get po -A'
+    alias kgpao='kubectl get po -A -o wide'
+    alias kgsvc='kubectl get svc -A -o wide'
+    alias kaf='kubectl apply -f'
+    alias kdf='kubectl delete -f'
+EOF
+    sudo chown $(id -u):$(id -g) $HOME/.bash_aliases
+    source ~/.bash_aliases && source ~/.bashrc    
+}
+sleep 1
+back2menu
+
 install_autojump(){
-    sudo apt-get update
-    sudo apt-get install autojump -y
+    
     echo ". /usr/share/autojump/autojump.sh" >> ~/.bashrc
     sleep 2
     source ~/.bashrc
@@ -167,14 +198,16 @@ menu() {
     echo ""
     echo " -----------🚀 Docker相關 🚀----------"
     echo -e " ${GREEN}1.${PLAIN} 安装 Docker & Compose"
-    echo -e " ${GREEN}2.${PLAIN} 移除docker預設Compose & 安裝新版V2 Compose"
+    echo -e " ${GREEN}2.${PLAIN} 移除 Docker 預設 Compose & 安裝新版V2 Compose"
+    echo -e " ${GREEN}3.${PLAIN} 完全移除 Docker"
     echo " -----------🔗 Kubernetes相關 🔗--------"
-    echo -e " ${GREEN}3.${PLAIN} 設定kubernetes ipv4 ${PLAIN}"
-    echo -e " ${GREEN}4.${PLAIN} 安裝CRI-O ${YELLOW}(Master & Node都需要)${PLAIN}"
-    echo -e " ${GREEN}5.${PLAIN} 安裝kubernetes工具 ${YELLOW}(Master & Node都需要)${PLAIN} ${GREEN}(kubeadm,kubectl)${PLAIN}"
-    echo -e " ${GREEN}6.${PLAIN} 安裝kubernetes包管理工具${YELLOW}(helm)${PLAIN}"
+    echo -e " ${GREEN}4.${PLAIN} 設定kubernetes ipv4 ${PLAIN}"
+    echo -e " ${GREEN}5.${PLAIN} 安裝CRI-O ${YELLOW}(Master & Node都需要)${PLAIN}"
+    echo -e " ${GREEN}6.${PLAIN} 安裝kubernetes工具 ${YELLOW}(Master & Node都需要)${PLAIN} ${GREEN}(kubeadm,kubectl)${PLAIN}"
+    echo -e " ${GREEN}7.${PLAIN} 安裝kubernetes包管理工具${YELLOW}(helm)${PLAIN}"
+    echo -e " ${GREEN}8.${PLAIN} 安裝kubernetes快速指令CLI${YELLOW}(helm)${PLAIN}"
     echo " ------------👍 其他實用 👍-----------"
-    echo -e " ${GREEN}7.${PLAIN} 安裝AutoJump並啟用${YELLOW}shell(bash)${PLAIN}"
+    echo -e " ${GREEN}9.${PLAIN} 安裝AutoJump並啟用${YELLOW}shell(bash)${PLAIN}"
     #echo -e " ${GREEN}8.${PLAIN} 手动续期已申请的证书"
     #echo -e " ${GREEN}9.${PLAIN} 切换证书颁发机构"
     #echo " -------------"
@@ -184,11 +217,13 @@ menu() {
     case "$NumberInput" in
         1) install_docker_compose ;;
         2) install_compose ;;
-        3) k8s_ipv4_setup ;;
-        4) k8s_install_crio ;;
-        5) k8s_install_node ;;
-        6) k8s_install_helm ;;
-        7) install_autojump ;;
+        3) uninstall_docker;;
+        4) k8s_ipv4_setup ;;
+        5) k8s_install_crio ;;
+        6) k8s_install_node ;;
+        7) k8s_install_helm ;;
+        8) install_kubecli ;;
+        9) install_autojump ;;
         #8) renew_cert ;;
         #9) switch_provider ;;
         *) exit 1 ;;
